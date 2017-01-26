@@ -1,16 +1,16 @@
 (ns buckbot.core
-  (:require ))
+  (:require [cljs.nodejs :as nodejs]))
 
-(enable-console-print!)
+(nodejs/enable-util-print!)
 
-(println "This text is printed from src/buckbot/core.cljs. Go ahead and edit it and see reloading in action.")
+(def builder (nodejs/require "botbuilder"))
 
-;; define your app data so that it doesn't get over-written on reload
+(defn -main []
+  (let [connector (-> (builder.ConsoleConnector.)
+                      (.listen))
+        bot (builder.UniversalBot. connector)]
+    (.dialog bot "/"
+      (fn [session]
+        (.send session "Hello World")))))
 
-(defonce app-state (atom {:text "Hello world!"}))
-
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+(set! *main-cli-fn* -main)
