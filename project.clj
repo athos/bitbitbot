@@ -1,4 +1,4 @@
-(defproject buckbot "0.1.0-SNAPSHOT"
+(defproject bitbitbot "0.1.0-SNAPSHOT"
   :description "FIXME: write this!"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -22,8 +22,8 @@
               [{:id "dev"
                 :source-paths ["src"]
                 :figwheel true
-                :compiler {:main buckbot.core
-                           :output-to "app/buckbot.js"
+                :compiler {:main bitbitbot.core
+                           :output-to "app/bitbitbot.js"
                            :output-dir "target/out"
                            :target :nodejs
                            :optimizations :none

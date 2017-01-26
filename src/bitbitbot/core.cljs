@@ -1,4 +1,4 @@
-(ns buckbot.core
+(ns bitbitbot.core
   (:require [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)

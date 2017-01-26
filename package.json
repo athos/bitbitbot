@@ -1,7 +1,7 @@
 {
-  "name": "buckbot",
+  "name": "bitbitbot",
   "version": "0.1.0",
-  "main": "app/buckbot.js",
+  "main": "app/bitbitbot.js",
   "dependencies": {
     "botbuilder": "^3.5.4",
     "restify": "^4.3.0"
