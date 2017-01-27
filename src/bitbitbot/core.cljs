@@ -3,14 +3,22 @@
 
 (nodejs/enable-util-print!)
 
-(def builder (nodejs/require "botbuilder"))
+(defonce builder (nodejs/require "botbuilder"))
+(defonce connector (.listen (builder.ConsoleConnector.)))
+
+(defonce bot (atom nil))
+
+(defn setup-bot []
+  (let [new-bot (builder.UniversalBot. connector)]
+    (.dialog new-bot "/"
+      (fn [session]
+        (.send session "Hello World")))
+    (reset! bot new-bot)))
 
 (defn -main []
-  (let [connector (-> (builder.ConsoleConnector.)
-                      (.listen))
-        bot (builder.UniversalBot. connector)]
-    (.dialog bot "/"
-      (fn [session]
-        (.send session "Hello World")))))
+  (setup-bot))
+
+(defn reload []
+  (setup-bot))
 
 (set! *main-cli-fn* -main)
