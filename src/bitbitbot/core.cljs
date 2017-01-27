@@ -4,21 +4,47 @@
 (nodejs/enable-util-print!)
 
 (defonce builder (nodejs/require "botbuilder"))
-(defonce connector (.listen (builder.ConsoleConnector.)))
+(defonce restify (nodejs/require "restify"))
 
-(defonce bot (atom nil))
+(defonce connector
+  (let [id (.. js/process -env -MICROSOFT_APP_ID)
+        password (.. js/process -env -MICROSOFT_APP_PASSWORD)
+        settings #js{:appId id :appPassword password}]
+    (builder.ChatConnector. settings)))
 
-(defn setup-bot []
-  (let [new-bot (builder.UniversalBot. connector)]
-    (.dialog new-bot "/"
+(defonce +server+ (atom nil))
+
+(defn start-server []
+  (js/console.log "starting server ...")
+  (let [port (or (.. js/process -env -PORT) 3978)
+        server (doto (.createServer restify)
+                 (.post "/api/messages" (.listen connector))
+                 (.listen port #(js/console.log "server started.")))]
+    (reset! +server+ server)))
+
+(defn stop-server []
+  (js/console.log "stopping server ...")
+  (.close @+server+)
+  (reset! +server+ nil))
+
+(defonce +bot+ (atom nil))
+
+(defn start-bot []
+  (let [bot (builder.UniversalBot. connector)]
+    (.dialog bot "/"
       (fn [session]
         (.send session "Hello World")))
-    (reset! bot new-bot)))
+    (reset! +bot+ bot)))
+
+(defn setup []
+  (start-server)
+  (start-bot))
 
 (defn -main []
-  (setup-bot))
+  (setup))
 
 (defn reload []
-  (setup-bot))
+  (stop-server)
+  (setup))
 
 (set! *main-cli-fn* -main)
