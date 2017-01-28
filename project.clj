@@ -19,11 +19,11 @@
   :clean-targets ^{:protect false} ["target"]
 
   :cljsbuild {:builds
-              [{:id "dev"
+              [{:id "app"
                 :source-paths ["src"]
                 :figwheel {:on-jsload "bitbitbot.core/reload"}
                 :compiler {:main bitbitbot.core
-                           :output-to "app/bitbitbot.js"
+                           :output-to "app.js"
                            :output-dir "target/out"
                            :target :nodejs
                            :optimizations :none

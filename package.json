@@ -1,7 +1,7 @@
 {
   "name": "bitbitbot",
   "version": "0.1.0",
-  "main": "app/bitbitbot.js",
+  "main": "app.js",
   "dependencies": {
     "botbuilder": "^3.5.4",
     "restify": "^4.3.0"
