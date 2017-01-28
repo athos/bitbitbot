@@ -1,0 +1,8 @@
+machine:
+  timezone: Asia/Tokyo
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - ./bin/deploy.sh
