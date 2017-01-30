@@ -12,4 +12,5 @@ app.js
 .lein-plugins/
 .repl
 .nrepl-port
+.credentials
 /node_modules/
