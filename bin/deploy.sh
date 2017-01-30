@@ -24,6 +24,6 @@ else
     git config --global user.name athos@circleci
     git config --global user.email athos0220@gmail.com
     git commit -m "Generate JS code from CI (for commit ${REVISION})"
-    git push git@heroku.com:bitbitbot.git heroku:master
+    git push -f git@heroku.com:bitbitbot.git heroku:master
     echo "Pushed to heroku"
 fi
