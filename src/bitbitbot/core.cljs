@@ -1,5 +1,6 @@
 (ns bitbitbot.core
-  (:require [cljs.nodejs :as nodejs]
+  (:require [bitbitbot.config :as config]
+            [cljs.nodejs :as nodejs]
             [integrant.core :as ig]))
 
 (nodejs/enable-util-print!)
@@ -20,10 +21,12 @@
         conn)))
 
 (defmethod ig/init-key :server [_ {:keys [port connector]}]
-  (js/console.log "starting server ...")
-  (doto (.createServer restify)
-    (.post "/api/messages" (.listen connector))
-    (.listen port #(js/console.log "server started."))))
+  (let [port (or (some-> (not-empty port) js/parseInt)
+                 3978)]
+    (js/console.log "starting server ...")
+    (doto (.createServer restify)
+      (.post "/api/messages" (.listen connector))
+      (.listen port #(js/console.log "server started.")))))
 
 (defmethod ig/halt-key! :server [_ server]
   (js/console.log "stopping server ...")
@@ -33,20 +36,18 @@
   (doto (builder.UniversalBot. connector)
     (.dialog "/"
       (fn [session]
-        (.send session "Hello World")))))
-
-(def config
-  {:connector {:id (.. js/process -env -MICROSOFT_APP_ID)
-               :password (.. js/process -env -MICROSOFT_APP_PASSWORD)}
-   :server    {:port (or (.. js/process -env -PORT) 3978)
-               :connector (ig/ref :connector)}
-   :bot       {:connector (ig/ref :connector)}})
+        (.send session "Howdy World")))))
 
 (defonce system (atom nil))
 
 (defn start []
-  (when-not @system
-    (reset! system (ig/init config))))
+  (config/with-config "config.edn"
+    (fn [err config]
+      (if err
+        (do (js/console.error "config.edn not found")
+            (js/process.exit 1))
+        (when-not @system
+          (reset! system (ig/init config)))))))
 
 (defn stop []
   (when-let [s @system]
@@ -54,6 +55,7 @@
     (reset! system nil)))
 
 (defn -main []
+  (config/register-config-tags!)
   (start))
 
 (defn reload []

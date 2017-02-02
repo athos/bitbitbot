@@ -1,0 +1,5 @@
+{:connector {:id       #env MICROSOFT_APP_ID
+             :password #env MICROSOFT_APP_PASSWORD}
+ :server    {:port      #env PORT
+             :connector #ref :connector}
+ :bot       {:connector #ref :connector}}
