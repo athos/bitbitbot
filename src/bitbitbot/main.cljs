@@ -1,5 +1,6 @@
 (ns bitbitbot.core
-  (:require [bitbitbot.bot :as bot]
+  (:require [bitbitbot.bitbucket :as bitbucket]
+            [bitbitbot.bot :as bot]
             [bitbitbot.config :as config]
             [bitbitbot.connector :as connector]
             [bitbitbot.server :as server]
@@ -7,6 +8,9 @@
             [integrant.core :as ig]))
 
 (nodejs/enable-util-print!)
+
+(defmethod ig/init-key :bitbucket [_ opts]
+  (bitbucket/make-client (:consumer-key opts) (:consumer-secret opts)))
 
 (defmethod ig/init-key :connector [_ {:keys [id password]}]
   (connector/get-instance id password))

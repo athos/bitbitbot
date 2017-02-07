@@ -2,4 +2,6 @@
              :password #env MICROSOFT_APP_PASSWORD}
  :server    {:port      #env PORT
              :connector #ref :connector}
+ :bitbucket {:consumer-key    #env BITBUCKET_CONSUMER_KEY
+             :consumer-secret #env BITBUCKET_CONSUMER_SECRET}
  :bot       {:connector #ref :connector}}
