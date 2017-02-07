@@ -10,7 +10,7 @@
   (get-full-path [this]))
 
 (extend-protocol Path
-  js/String
+  string
   (get-full-path [path]
     (str API_BASE_URI path))
   Uri
@@ -22,15 +22,19 @@
 (defn make-client [consumer-key consumer-secret]
   (->BitbucketClient consumer-key consumer-secret))
 
-(defn response-body [res]
-  (some-> res .-body js/JSON.parse (js->clj :keywordize-keys true)))
+(defn- response-body [res]
+  (some-> res .-body (js->clj :keywordize-keys true)))
+
+(defn- request* [path opts]
+  (-> (got (get-full-path path) (clj->js (merge {:json true} opts)))
+      (.then response-body)))
 
 (defn fetch-access-token [{:keys [consumer-key consumer-secret]}]
-  (let [opts {:auth (str consumer-key ":" consumer-secret)
-              :body {:grant_type "client_credentials"}}]
-    (-> (got.post "https://bitbucket.org/site/oauth2/access_token"
-                  (clj->js opts))
-        (.then (comp :access_token response-body)))))
+  (-> (request* (Uri. "https://bitbucket.org/site/oauth2/access_token")
+                {:method :post
+                 :auth (str consumer-key ":" consumer-secret)
+                 :body {:grant_type "client_credentials"}})
+      (.then #(:access_token %))))
 
 (defn request
   ([client path]
@@ -40,6 +44,5 @@
        (.then
          (fn [token]
            (let [headers {:authorization (str "Bearer " token)}
-                 opts (clj->js (merge {:headers headers} opts))]
-             (-> (got (get-full-path path) opts)
-                 (.then response-body))))))))
+                 opts (merge {:headers headers} opts)]
+             (request* path opts)))))))
