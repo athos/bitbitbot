@@ -22,8 +22,8 @@
 (defmethod ig/halt-key! :server [_ server]
   (server/stop-server server))
 
-(defmethod ig/init-key :dialog [_ {:keys [model-url]}]
-  (dialog/make-dialog model-url))
+(defmethod ig/init-key :dialog [_ {:keys [model-url api-client]}]
+  (dialog/make-dialog model-url api-client))
 
 (defmethod ig/init-key :bot [_ {:keys [connector dialog]}]
   (bot/make-bot connector dialog))
