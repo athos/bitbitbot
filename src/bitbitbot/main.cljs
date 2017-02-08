@@ -1,4 +1,4 @@
-(ns bitbitbot.core
+(ns bitbitbot.main
   (:require [bitbitbot.bitbucket :as bitbucket]
             [bitbitbot.bot :as bot]
             [bitbitbot.config :as config]
