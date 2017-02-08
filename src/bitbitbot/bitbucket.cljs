@@ -1,26 +1,22 @@
 (ns bitbitbot.bitbucket
-  (:require [cljs.nodejs :as nodejs])
+  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require [cljs.nodejs :as nodejs]
+            [cljs.core.async :as a])
   (:import [goog Uri]))
 
 (defonce got (nodejs/require "got"))
 
 (def API_BASE_URI "https://api.bitbucket.org/2.0")
 
-(defprotocol Path
-  (get-full-path [this]))
-
-(extend-protocol Path
-  string
-  (get-full-path [path]
-    (str API_BASE_URI path))
-  Uri
-  (get-full-path [uri]
-    (.toString uri)))
-
 (defrecord BitbucketClient [consumer-key consumer-secret])
 
 (defn make-client [consumer-key consumer-secret]
   (->BitbucketClient consumer-key consumer-secret))
+
+(defn- get-full-path [path]
+  (if (.hasScheme (Uri. path))
+    path
+    (str API_BASE_URI path)))
 
 (defn- response-body [res]
   (some-> res .-body (js->clj :keywordize-keys true)))
@@ -30,7 +26,7 @@
       (.then response-body)))
 
 (defn fetch-access-token [{:keys [consumer-key consumer-secret]}]
-  (-> (request* (Uri. "https://bitbucket.org/site/oauth2/access_token")
+  (-> (request* "https://bitbucket.org/site/oauth2/access_token"
                 {:method :post
                  :auth (str consumer-key ":" consumer-secret)
                  :body {:grant_type "client_credentials"}})
