@@ -42,3 +42,36 @@
            (let [headers {:authorization (str "Bearer " token)}
                  opts (merge {:headers headers} opts)]
              (request* path opts)))))))
+
+(defn paging-chan [client path]
+  (let [ch (a/chan)]
+    (letfn [(rec [path]
+              (-> (request client path)
+                  (.then
+                    (fn [{:keys [values next]}]
+                      (go (a/<! (a/onto-chan ch values false))
+                          (if next
+                            (rec next)
+                            (a/close! ch)))))
+                  (.catch
+                    (fn [e]
+                      (a/put! ch e)
+                      (a/close! ch)))))]
+      (rec path)
+      ch)))
+
+(comment
+
+  (let [ch (paging-chan client "/repositories/athos0220")]
+    (go-loop [repos []]
+      (if-let [repo (a/<! ch)]
+        (if (instance? js/Error repo)
+          (throw repo)
+          (conj repos repo))
+        repos)))
+
+  :or
+
+  (a/into [] (paging-chan client "repositories/athos0220"))
+
+)
