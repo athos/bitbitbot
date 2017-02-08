@@ -4,4 +4,6 @@
              :connector #ref :connector}
  :bitbucket {:consumer-key    #env BITBUCKET_CONSUMER_KEY
              :consumer-secret #env BITBUCKET_CONSUMER_SECRET}
- :bot       {:connector #ref :connector}}
+ :dialog    {:model-url #env LUIS_MODEL_URL}
+ :bot       {:connector #ref :connector
+             :dialog #ref :dialog}}

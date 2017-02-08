@@ -3,8 +3,6 @@
 
 (defonce builder (nodejs/require "botbuilder"))
 
-(defn make-bot [connector]
+(defn make-bot [connector dialog]
   (doto (builder.UniversalBot. connector)
-    (.dialog "/"
-      (fn [session]
-        (.send session "Hello World")))))
+    (.dialog "/" dialog)))

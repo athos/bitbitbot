@@ -3,6 +3,7 @@
             [bitbitbot.bot :as bot]
             [bitbitbot.config :as config]
             [bitbitbot.connector :as connector]
+            [bitbitbot.dialog :as dialog]
             [bitbitbot.server :as server]
             [cljs.nodejs :as nodejs]
             [integrant.core :as ig]))
@@ -21,8 +22,11 @@
 (defmethod ig/halt-key! :server [_ server]
   (server/stop-server server))
 
-(defmethod ig/init-key :bot [_ {:keys [connector]}]
-  (bot/make-bot connector))
+(defmethod ig/init-key :dialog [_ {:keys [model-url]}]
+  (dialog/make-dialog model-url))
+
+(defmethod ig/init-key :bot [_ {:keys [connector dialog]}]
+  (bot/make-bot connector dialog))
 
 (defonce system (atom nil))
 
