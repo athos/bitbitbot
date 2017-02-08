@@ -8,6 +8,15 @@
 
 (def API_BASE_URI "https://api.bitbucket.org/2.0")
 
+(defprotocol ApiClient
+  (-request [this path opts]))
+
+(defn request
+  ([client path]
+   (request client path {}))
+  ([client path opts]
+   (-request client path opts)))
+
 (defrecord BitbucketClient [consumer-key consumer-secret])
 
 (defn make-client [consumer-key consumer-secret]
@@ -32,16 +41,15 @@
                  :body {:grant_type "client_credentials"}})
       (.then #(:access_token %))))
 
-(defn request
-  ([client path]
-   (request client path {}))
-  ([client path opts]
-   (-> (fetch-access-token client)
-       (.then
-         (fn [token]
-           (let [headers {:authorization (str "Bearer " token)}
-                 opts (merge {:headers headers} opts)]
-             (request* path opts)))))))
+(extend-type BitbucketClient
+  ApiClient
+  (-request [client path opts]
+    (-> (fetch-access-token client)
+        (.then
+          (fn [token]
+            (let [headers {:authorization (str "Bearer " token)}
+                  opts (merge {:headers headers} opts)]
+              (request* path opts)))))))
 
 (defn paging-chan
   ([client path]
