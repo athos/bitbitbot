@@ -22,8 +22,8 @@
   :cljsbuild {:builds
               [{:id "app"
                 :source-paths ["src"]
-                :figwheel {:on-jsload "bitbitbot.core/reload"}
-                :compiler {:main bitbitbot.core
+                :figwheel {:on-jsload "bitbitbot.main/reload"}
+                :compiler {:main bitbitbot.main
                            :output-to "app.js"
                            :output-dir "target/out"
                            :target :nodejs
