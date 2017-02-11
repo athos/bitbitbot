@@ -20,20 +20,27 @@
   :clean-targets ^{:protect false} ["target"]
 
   :cljsbuild {:builds
-              [{:id "app"
-                :source-paths ["src"]
+              [{:id "dev"
+                :source-paths ["src" "dev/cljs"]
                 :figwheel {:on-jsload "bitbitbot.main/reload"}
                 :compiler {:main bitbitbot.main
-                           :output-to "app.js"
-                           :output-dir "target/out"
+                           :output-to "dev.js"
+                           :output-dir "target/dev/out"
                            :target :nodejs
                            :optimizations :none
-                           :source-map true}}]}
+                           :source-map true}}
+               {:id "app"
+                :source-paths ["src"]
+                :compiler {:main bitbitbot.main
+                           :output-to "app.js"
+                           :output-dir "target/app/out"
+                           :target :nodejs
+                           :optimizations :none}}]}
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.8.2"]
                                   [figwheel-sidecar "0.5.8"]
                                   [com.cemerick/piggieback "0.2.1"]]
-                   :source-paths ["src" "dev"]
+                   :source-paths ["src" "dev/clj"]
                    :repl-options {:init (set! *print-length* 50)
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 )
