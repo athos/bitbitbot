@@ -20,9 +20,11 @@
                 (-> (pr/fetch client repo-name)
                     (.then (fn [prs]
                              (if (seq prs)
-                               (let [titles (str/join "\n" (map :title prs))]
-                                 (.send session (str "一覧は以下のとおりです："))
-                                 (.send session titles))
+                               (doto session
+                                 (.send (str "一覧は以下のとおりです："))
+                                 (.send (->> prs
+                                             (map #(str "- " (:title %)))
+                                             (str/join "\n"))))
                                (.send session "現在プルリクエストはありません。")))))))])
       (.onDefault
         (builder.DialogAction.send "すみません。よく分かりませんでした。")))))
