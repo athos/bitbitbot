@@ -6,6 +6,7 @@
   (:import [goog Uri]))
 
 (defonce got (nodejs/require "got"))
+(defonce moment (nodejs/require "moment"))
 
 (def API_BASE_URI "https://api.bitbucket.org/2.0")
 
@@ -18,10 +19,12 @@
   ([client path opts]
    (-request client path opts)))
 
-(defrecord BitbucketClient [consumer-key consumer-secret])
+(defrecord BitbucketClient
+    [consumer-key consumer-secret access-token refresh-token expires-at])
 
 (defn make-client [consumer-key consumer-secret]
-  (->BitbucketClient consumer-key consumer-secret))
+  (map->BitbucketClient {:consumer-key consumer-key
+                         :consumer-secret consumer-secret}))
 
 (defn- get-full-path [path]
   (if (.hasScheme (Uri. path))
@@ -35,22 +38,46 @@
   (-> (got (get-full-path path) (clj->js (merge {:json true} opts)))
       (.then response-body)))
 
-(defn fetch-access-token [{:keys [consumer-key consumer-secret]}]
-  (-> (request* "https://bitbucket.org/site/oauth2/access_token"
-                {:method :post
-                 :auth (str consumer-key ":" consumer-secret)
-                 :body {:grant_type "client_credentials"}})
-      (.then #(:access_token %))))
+(defn set-access-token! [client res]
+  (set! (.-access-token client) (:access_token res))
+  (set! (.-refresh-token client) (:refresh_token res))
+  (set! (.-expires-at client)
+        (.. (moment)
+            (add (:expires_in res) "seconds")
+            (toDate))))
+
+(defn fetch-access-token
+  ([client]
+   (fetch-access-token client {}))
+  ([{:keys [consumer-key consumer-secret] :as client} params]
+   (request* "https://bitbucket.org/site/oauth2/access_token"
+             {:method :post
+              :auth (str consumer-key ":" consumer-secret)
+              :body (merge {:grant_type "client_credentials"}
+                           params)})))
+
+(defn refresh-access-token [client]
+  (fetch-access-token client {:grant_type "refresh_token"
+                              :refresh_token (:refresh-token client)}))
 
 (extend-type BitbucketClient
   ApiClient
   (-request [client path opts]
-    (-> (fetch-access-token client)
-        (.then
-          (fn [token]
-            (let [headers {:authorization (str "Bearer " token)}
-                  opts (merge {:headers headers} opts)]
-              (request* path opts)))))))
+    (letfn [(callback [res]
+              (set-access-token! client res)
+              (:access_token res))]
+      (-> (cond (not (:access-token client))
+                (.then (fetch-access-token client) callback)
+
+                (>= (compare (js/Date.) (:expires-at client)) 0)
+                (.then (refresh-access-token client) callback)
+
+                :else (js/Promise.resolve (:access-token client)))
+          (.then
+            (fn [token]
+              (let [headers {:authorization (str "Bearer " token)}
+                    opts (merge {:headers headers} opts)]
+                (request* path opts))))))))
 
 (defn paging-chan
   ([client path opts]
